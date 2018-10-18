@@ -84,6 +84,27 @@ static SECP256K1_INLINE void *checked_realloc(const secp256k1_callback* cb, void
     return ret;
 }
 
+#if defined(__BIGGEST_ALIGNMENT__)
+#define ALIGNMENT __BIGGEST_ALIGNMENT__
+#else
+/* Using 16 bytes alignment because common architectures never have alignment
+ * requirements above 8 for any of the types we care about. In addition we
+ * leave some room because currently we don't care about a few bytes. */
+#define ALIGNMENT 16
+#endif
+
+#define ROUND_TO_ALIGN(size) (((size + ALIGNMENT - 1) / ALIGNMENT) * ALIGNMENT)
+
+static SECP256K1_INLINE void *manual_alloc(void** prealloc_ptr, size_t alloc_size, void* base, size_t max_size) {
+    size_t aligned_alloc_size = ROUND_TO_ALIGN(alloc_size);
+    void* ret = *prealloc_ptr;
+    CHECK((unsigned char*)*prealloc_ptr != NULL);
+    CHECK((unsigned char*)*prealloc_ptr >= (unsigned char*)base);
+    CHECK(((unsigned char*)*prealloc_ptr - (unsigned char*)base) + aligned_alloc_size <= max_size);
+    *((unsigned char**)prealloc_ptr) += aligned_alloc_size;
+    return ret;
+}
+
 /* Macro for restrict, when available and not in a VERIFY build. */
 #if defined(SECP256K1_BUILD) && defined(VERIFY)
 # define SECP256K1_RESTRICT
