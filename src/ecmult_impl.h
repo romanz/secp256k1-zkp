@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "util.h"
 #include "group.h"
 #include "scalar.h"
 #include "ecmult.h"
@@ -292,6 +293,14 @@ static void secp256k1_ecmult_odd_multiples_table_storage_var(const int n, secp25
         secp256k1_ge_neg((r), (r)); \
     } \
 } while(0)
+
+static size_t secp256k1_ecmult_context_prealloc_size(void) {
+    int ret = ROUND_TO_ALIGN(sizeof((*((secp256k1_ecmult_context*) NULL)->pre_g)[0]) * ECMULT_TABLE_SIZE(WINDOW_G));
+#ifdef USE_ENDOMORPHISM
+    ret += ROUND_TO_ALIGN(sizeof((*((secp256k1_ecmult_context*) NULL)->pre_g_128)[0]) * ECMULT_TABLE_SIZE(WINDOW_G));
+#endif
+    return ret;
+}
 
 static void secp256k1_ecmult_context_init(secp256k1_ecmult_context *ctx) {
     ctx->pre_g = NULL;

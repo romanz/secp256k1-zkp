@@ -20,6 +20,7 @@ typedef struct {
 #endif
 } secp256k1_ecmult_context;
 
+static size_t secp256k1_ecmult_context_prealloc_size(void);
 static void secp256k1_ecmult_context_init(secp256k1_ecmult_context *ctx);
 static void secp256k1_ecmult_context_build(secp256k1_ecmult_context *ctx, const secp256k1_callback *cb);
 static void secp256k1_ecmult_context_clone(secp256k1_ecmult_context *dst,
