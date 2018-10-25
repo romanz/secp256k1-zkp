@@ -93,6 +93,17 @@ size_t secp256k1_context_prealloc_size(unsigned int flags) {
     return ret;
 }
 
+size_t secp256k1_context_prealloc_size_for_clone(const secp256k1_context* ctx) {
+    size_t ret = ROUND_TO_ALIGN(sizeof(secp256k1_context));
+    if (secp256k1_ecmult_gen_context_is_built(&ctx->ecmult_gen_ctx)) {
+        ret += secp256k1_ecmult_gen_context_prealloc_size();
+    }
+    if (secp256k1_ecmult_context_is_built(&ctx->ecmult_ctx)) {
+        ret += secp256k1_ecmult_context_prealloc_size();
+    }
+    return ret;
+}
+
 secp256k1_context* secp256k1_context_prealloc_create(void* prealloc, unsigned int flags) {
     void* const base = prealloc;
     size_t prealloc_size = secp256k1_context_prealloc_size(flags);
@@ -132,19 +143,19 @@ secp256k1_context* secp256k1_context_create(unsigned int flags) {
     return ctx;
 }
 
-secp256k1_context* secp256k1_context_clone(const secp256k1_context* ctx) {
-    secp256k1_context* ret;
-    size_t prealloc_size = ROUND_TO_ALIGN(sizeof(secp256k1_context));
-    if (secp256k1_ecmult_gen_context_is_built(&ctx->ecmult_gen_ctx)) {
-        prealloc_size += secp256k1_ecmult_gen_context_prealloc_size();
-    }
-    if (secp256k1_ecmult_context_is_built(&ctx->ecmult_ctx)) {
-        prealloc_size += secp256k1_ecmult_context_prealloc_size();
-    }
-    ret = checked_malloc(&ctx->error_callback, prealloc_size);
+secp256k1_context* secp256k1_context_prealloc_clone(const secp256k1_context* ctx, void* prealloc) {
+    size_t prealloc_size = secp256k1_context_prealloc_size_for_clone(ctx);
+    secp256k1_context* ret = (secp256k1_context*)prealloc;
     memcpy(ret, ctx, prealloc_size);
     secp256k1_ecmult_gen_context_finalize_memcpy(&ret->ecmult_gen_ctx, &ctx->ecmult_gen_ctx);
     secp256k1_ecmult_context_finalize_memcpy(&ret->ecmult_ctx, &ctx->ecmult_ctx);
+    return ret;
+}
+
+secp256k1_context* secp256k1_context_clone(const secp256k1_context* ctx) {
+    size_t prealloc_size = secp256k1_context_prealloc_size_for_clone(ctx);
+    secp256k1_context* ret = (secp256k1_context*)checked_malloc(&ctx->error_callback, prealloc_size);
+    ret = secp256k1_context_prealloc_clone(ctx, ret);
     return ret;
 }
 
