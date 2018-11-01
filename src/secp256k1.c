@@ -5,7 +5,7 @@
  **********************************************************************/
 
 #include "include/secp256k1.h"
-#include "include/secp256k1_prealloc.h"
+#include "include/secp256k1_preallocated.h"
 
 #include "util.h"
 #include "num_impl.h"
@@ -75,7 +75,7 @@ static secp256k1_context secp256k1_context_no_precomp_ = {
 };
 secp256k1_context *secp256k1_context_no_precomp = &secp256k1_context_no_precomp_;
 
-size_t secp256k1_context_prealloc_size(unsigned int flags) {
+size_t secp256k1_context_preallocated_size(unsigned int flags) {
     size_t ret = ROUND_TO_ALIGN(sizeof(secp256k1_context));
 
     if (EXPECT((flags & SECP256K1_FLAGS_TYPE_MASK) != SECP256K1_FLAGS_TYPE_CONTEXT, 0)) {
@@ -86,34 +86,34 @@ size_t secp256k1_context_prealloc_size(unsigned int flags) {
     }
 
     if (flags & SECP256K1_FLAGS_BIT_CONTEXT_SIGN) {
-        ret += secp256k1_ecmult_gen_context_prealloc_size();
+        ret += secp256k1_ecmult_gen_context_preallocated_size();
     }
     if (flags & SECP256K1_FLAGS_BIT_CONTEXT_VERIFY) {
-        ret += secp256k1_ecmult_context_prealloc_size();
+        ret += secp256k1_ecmult_context_preallocated_size();
     }
     return ret;
 }
 
-size_t secp256k1_context_prealloc_size_for_clone(const secp256k1_context* ctx) {
+size_t secp256k1_context_preallocated_size_for_clone(const secp256k1_context* ctx) {
     size_t ret = ROUND_TO_ALIGN(sizeof(secp256k1_context));
     VERIFY_CHECK(ctx != NULL);
     if (secp256k1_ecmult_gen_context_is_built(&ctx->ecmult_gen_ctx)) {
-        ret += secp256k1_ecmult_gen_context_prealloc_size();
+        ret += secp256k1_ecmult_gen_context_preallocated_size();
     }
     if (secp256k1_ecmult_context_is_built(&ctx->ecmult_ctx)) {
-        ret += secp256k1_ecmult_context_prealloc_size();
+        ret += secp256k1_ecmult_context_preallocated_size();
     }
     return ret;
 }
 
-secp256k1_context* secp256k1_context_prealloc_create(void* prealloc, unsigned int flags) {
+secp256k1_context* secp256k1_context_preallocated_create(void* prealloc, unsigned int flags) {
     void* const base = prealloc;
     size_t prealloc_size;
     secp256k1_context* ret;
 
     VERIFY_CHECK(prealloc != NULL);
-    prealloc_size = secp256k1_context_prealloc_size(flags);
-    ret = (secp256k1_context*)manual_alloc(&prealloc, sizeof(secp256k1_context), base, prealloc_size);
+    prealloc_size = secp256k1_context_preallocated_size(flags);
+    ret = (secp256k1_context*)manual_malloc(&prealloc, sizeof(secp256k1_context), base, prealloc_size);
     ret->illegal_callback = default_illegal_callback;
     ret->error_callback = default_error_callback;
 
@@ -138,9 +138,9 @@ secp256k1_context* secp256k1_context_prealloc_create(void* prealloc, unsigned in
 }
 
 secp256k1_context* secp256k1_context_create(unsigned int flags) {
-    size_t const prealloc_size = secp256k1_context_prealloc_size(flags);
+    size_t const prealloc_size = secp256k1_context_preallocated_size(flags);
     secp256k1_context* ctx = (secp256k1_context*)checked_malloc(&default_error_callback, prealloc_size);
-    if (EXPECT(secp256k1_context_prealloc_create(ctx, flags) == NULL, 0)) {
+    if (EXPECT(secp256k1_context_preallocated_create(ctx, flags) == NULL, 0)) {
         free(ctx);
         return NULL;
     }
@@ -148,13 +148,13 @@ secp256k1_context* secp256k1_context_create(unsigned int flags) {
     return ctx;
 }
 
-secp256k1_context* secp256k1_context_prealloc_clone(const secp256k1_context* ctx, void* prealloc) {
+secp256k1_context* secp256k1_context_preallocated_clone(const secp256k1_context* ctx, void* prealloc) {
     size_t prealloc_size;
     secp256k1_context* ret;
     VERIFY_CHECK(ctx != NULL);
     ARG_CHECK(prealloc != NULL);
 
-    prealloc_size = secp256k1_context_prealloc_size_for_clone(ctx);
+    prealloc_size = secp256k1_context_preallocated_size_for_clone(ctx);
     ret = (secp256k1_context*)prealloc;
     memcpy(ret, ctx, prealloc_size);
     secp256k1_ecmult_gen_context_finalize_memcpy(&ret->ecmult_gen_ctx, &ctx->ecmult_gen_ctx);
@@ -167,13 +167,13 @@ secp256k1_context* secp256k1_context_clone(const secp256k1_context* ctx) {
     size_t prealloc_size;
 
     VERIFY_CHECK(ctx != NULL);
-    prealloc_size = secp256k1_context_prealloc_size_for_clone(ctx);
+    prealloc_size = secp256k1_context_preallocated_size_for_clone(ctx);
     ret = (secp256k1_context*)checked_malloc(&ctx->error_callback, prealloc_size);
-    ret = secp256k1_context_prealloc_clone(ctx, ret);
+    ret = secp256k1_context_preallocated_clone(ctx, ret);
     return ret;
 }
 
-void secp256k1_context_prealloc_destroy(secp256k1_context* ctx) {
+void secp256k1_context_preallocated_destroy(secp256k1_context* ctx) {
     if (ctx != NULL) {
         secp256k1_ecmult_context_clear(&ctx->ecmult_ctx);
         secp256k1_ecmult_gen_context_clear(&ctx->ecmult_gen_ctx);
@@ -182,7 +182,7 @@ void secp256k1_context_prealloc_destroy(secp256k1_context* ctx) {
 
 void secp256k1_context_destroy(secp256k1_context* ctx) {
     if (ctx != NULL) {
-        secp256k1_context_prealloc_destroy(ctx);
+        secp256k1_context_preallocated_destroy(ctx);
         free(ctx);
     }
 }

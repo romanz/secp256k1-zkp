@@ -254,7 +254,7 @@ static void secp256k1_ecmult_odd_multiples_table_storage_var(const int n, secp25
     } \
 } while(0)
 
-static size_t secp256k1_ecmult_context_prealloc_size(void) {
+static size_t secp256k1_ecmult_context_preallocated_size(void) {
     int ret = ROUND_TO_ALIGN(sizeof((*((secp256k1_ecmult_context*) NULL)->pre_g)[0]) * ECMULT_TABLE_SIZE(WINDOW_G));
 #ifdef USE_ENDOMORPHISM
     ret += ROUND_TO_ALIGN(sizeof((*((secp256k1_ecmult_context*) NULL)->pre_g_128)[0]) * ECMULT_TABLE_SIZE(WINDOW_G));
@@ -272,7 +272,7 @@ static void secp256k1_ecmult_context_init(secp256k1_ecmult_context *ctx) {
 static void secp256k1_ecmult_context_build(secp256k1_ecmult_context *ctx, void **prealloc) {
     secp256k1_gej gj;
     void* const base = *prealloc;
-    size_t const prealloc_size = secp256k1_ecmult_context_prealloc_size();
+    size_t const prealloc_size = secp256k1_ecmult_context_preallocated_size();
 
     if (ctx->pre_g != NULL) {
         return;
@@ -281,7 +281,7 @@ static void secp256k1_ecmult_context_build(secp256k1_ecmult_context *ctx, void *
     /* get the generator */
     secp256k1_gej_set_ge(&gj, &secp256k1_ge_const_g);
 
-    ctx->pre_g = (secp256k1_ge_storage (*)[])manual_alloc(prealloc, sizeof((*ctx->pre_g)[0]) * ECMULT_TABLE_SIZE(WINDOW_G), base, prealloc_size);
+    ctx->pre_g = (secp256k1_ge_storage (*)[])manual_malloc(prealloc, sizeof((*ctx->pre_g)[0]) * ECMULT_TABLE_SIZE(WINDOW_G), base, prealloc_size);
 
     /* precompute the tables with odd multiples */
     secp256k1_ecmult_odd_multiples_table_storage_var(ECMULT_TABLE_SIZE(WINDOW_G), *ctx->pre_g, &gj);
@@ -291,7 +291,7 @@ static void secp256k1_ecmult_context_build(secp256k1_ecmult_context *ctx, void *
         secp256k1_gej g_128j;
         int i;
 
-        ctx->pre_g_128 = (secp256k1_ge_storage (*)[])manual_alloc(prealloc, sizeof((*ctx->pre_g_128)[0]) * ECMULT_TABLE_SIZE(WINDOW_G), base, prealloc_size);
+        ctx->pre_g_128 = (secp256k1_ge_storage (*)[])manual_malloc(prealloc, sizeof((*ctx->pre_g_128)[0]) * ECMULT_TABLE_SIZE(WINDOW_G), base, prealloc_size);
 
         /* calculate 2^128*generator */
         g_128j = gj;
