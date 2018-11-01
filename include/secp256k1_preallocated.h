@@ -1,5 +1,5 @@
-#ifndef SECP256K1_PREALLOC_H
-#define SECP256K1_PREALLOC_H
+#ifndef SECP256K1_PREALLOCACTED_H
+#define SECP256K1_PREALLOCACTED_H
 
 #include "secp256k1.h"
 
@@ -11,12 +11,12 @@ extern "C" {
  *  caller-provided memory.
  *
  *  The purpose of this function is to determine how much memory must be provided
- *  to secp256k1_context_prealloc_create.
+ *  to secp256k1_context_preallocated_create.
  *
  *  Returns: the required size of the caller-provided memory block
  *  In:      flags:    which parts of the context to initialize.
  */
-SECP256K1_API size_t secp256k1_context_prealloc_size(
+SECP256K1_API size_t secp256k1_context_preallocated_size(
     unsigned int flags
 ) SECP256K1_WARN_UNUSED_RESULT;
 
@@ -24,14 +24,14 @@ SECP256K1_API size_t secp256k1_context_prealloc_size(
  *
  *  Returns: a newly created context object.
  *  In:      prealloc: a pointer to a rewritable contiguous block of memory of
- *                     size at least secp256k1_context_prealloc_size(flags)
+ *                     size at least secp256k1_context_preallocated_size(flags)
  *                     bytes, suitably aligned to hold an object of any type
  *                     (cannot be NULL)
  *           flags:    which parts of the context to initialize.
  *
  *  See also secp256k1_context_randomize.
  */
-SECP256K1_API secp256k1_context* secp256k1_context_prealloc_create(
+SECP256K1_API secp256k1_context* secp256k1_context_preallocated_create(
     void* prealloc,
     unsigned int flags
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_WARN_UNUSED_RESULT;
@@ -40,12 +40,12 @@ SECP256K1_API secp256k1_context* secp256k1_context_prealloc_create(
  *  caller-provided memory.
  *
  *  The purpose of this function is to determine how much memory must be provided
- *  to secp256k1_context_prealloc_clone when copying the context ctx.
+ *  to secp256k1_context_preallocated_clone when copying the context ctx.
  *
  *  Returns: the required size of the caller-provided memory block.
  *  In:      ctx: an existing context to copy (cannot be NULL)
  */
-SECP256K1_API size_t secp256k1_context_prealloc_clone_size(
+SECP256K1_API size_t secp256k1_context_preallocated_clone_size(
     const secp256k1_context* ctx
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_WARN_UNUSED_RESULT;
 
@@ -54,11 +54,11 @@ SECP256K1_API size_t secp256k1_context_prealloc_clone_size(
  *  Returns: a newly created context object.
  *  Args:    ctx:      an existing context to copy (cannot be NULL)
  *  In:      prealloc: a pointer to a rewritable contiguous block of memory of
- *                     size at least secp256k1_context_prealloc_size(flags)
+ *                     size at least secp256k1_context_preallocated_size(flags)
  *                     bytes, suitably aligned to hold an object of any type
  *                     (cannot be NULL)
  */
-SECP256K1_API secp256k1_context* secp256k1_context_prealloc_clone(
+SECP256K1_API secp256k1_context* secp256k1_context_preallocated_clone(
     const secp256k1_context* ctx,
     void* prealloc
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_WARN_UNUSED_RESULT;
@@ -69,16 +69,16 @@ SECP256K1_API secp256k1_context* secp256k1_context_prealloc_clone(
  *  The context pointer may not be used afterwards.
  *
  *  The context to destroy must have been created using
- *  secp256k1_context_prealloc_create or secp256k1_context_prealloc_clone.
+ *  secp256k1_context_preallocated_create or secp256k1_context_preallocated_clone.
  *  If the context has instead been created using secp256k1_context_create or
  *  secp256k1_context_clone, the behaviour is undefined. In that case,
  *  secp256k1_context_destroy must be used instead.
  *
  *  Args:   ctx: an existing context to destroy, constructed using
- *               secp256k1_context_prealloc_create or
- *               secp256k1_context_prealloc_clone (cannot be NULL)
+ *               secp256k1_context_preallocated_create or
+ *               secp256k1_context_preallocated_clone (cannot be NULL)
  */
-SECP256K1_API void secp256k1_context_prealloc_destroy(
+SECP256K1_API void secp256k1_context_preallocated_destroy(
     secp256k1_context* ctx
 );
 
@@ -86,4 +86,4 @@ SECP256K1_API void secp256k1_context_prealloc_destroy(
 }
 #endif
 
-#endif /* SECP256K1_PREALLOC_H */
+#endif /* SECP256K1_PREALLOCATED_H */

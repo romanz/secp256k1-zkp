@@ -95,7 +95,7 @@ static SECP256K1_INLINE void *checked_realloc(const secp256k1_callback* cb, void
 
 #define ROUND_TO_ALIGN(size) (((size + ALIGNMENT - 1) / ALIGNMENT) * ALIGNMENT)
 
-static SECP256K1_INLINE void *manual_alloc(void** prealloc_ptr, size_t alloc_size, void* base, size_t max_size) {
+static SECP256K1_INLINE void *manual_malloc(void** prealloc_ptr, size_t alloc_size, void* base, size_t max_size) {
     size_t aligned_alloc_size = ROUND_TO_ALIGN(alloc_size);
     void* ret = *prealloc_ptr;
     CHECK((unsigned char*)*prealloc_ptr != NULL);

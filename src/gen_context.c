@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
     fprintf(fp, "#define SC SECP256K1_GE_STORAGE_CONST\n");
     fprintf(fp, "static const secp256k1_ge_storage secp256k1_ecmult_static_context[64][16] = {\n");
 
-    base = checked_malloc(&default_error_callback, secp256k1_ecmult_gen_context_prealloc_size());
+    base = checked_malloc(&default_error_callback, secp256k1_ecmult_gen_context_preallocated_size());
     prealloc = base;
     secp256k1_ecmult_gen_context_init(&ctx);
     secp256k1_ecmult_gen_context_build(&ctx, &prealloc);
@@ -70,10 +70,10 @@ int main(int argc, char **argv) {
     fprintf(fp,"};\n");
     secp256k1_ecmult_gen_context_clear(&ctx);
     free(base);
-    
+
     fprintf(fp, "#undef SC\n");
     fprintf(fp, "#endif\n");
     fclose(fp);
-    
+
     return 0;
 }

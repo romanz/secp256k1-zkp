@@ -16,7 +16,7 @@
 #include "ecmult_static_context.h"
 #endif
 
-static size_t secp256k1_ecmult_gen_context_prealloc_size(void) {
+static size_t secp256k1_ecmult_gen_context_preallocated_size(void) {
 #ifndef USE_ECMULT_STATIC_PRECOMPUTATION
     return ROUND_TO_ALIGN(sizeof(*((secp256k1_ecmult_gen_context*) NULL)->prec));
 #else
@@ -34,7 +34,7 @@ static void secp256k1_ecmult_gen_context_build(secp256k1_ecmult_gen_context *ctx
     secp256k1_gej gj;
     secp256k1_gej nums_gej;
     int i, j;
-    size_t const prealloc_size = secp256k1_ecmult_gen_context_prealloc_size();
+    size_t const prealloc_size = secp256k1_ecmult_gen_context_preallocated_size();
     void* const base = *prealloc;
 #endif
 
@@ -42,7 +42,7 @@ static void secp256k1_ecmult_gen_context_build(secp256k1_ecmult_gen_context *ctx
         return;
     }
 #ifndef USE_ECMULT_STATIC_PRECOMPUTATION
-    ctx->prec = (secp256k1_ge_storage (*)[64][16])manual_alloc(prealloc, prealloc_size, base, prealloc_size);
+    ctx->prec = (secp256k1_ge_storage (*)[64][16])manual_malloc(prealloc, prealloc_size, base, prealloc_size);
 
     /* get the generator */
     secp256k1_gej_set_ge(&gj, &secp256k1_ge_const_g);
