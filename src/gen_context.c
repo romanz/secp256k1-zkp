@@ -6,6 +6,8 @@
 
 #define USE_BASIC_CONFIG 1
 
+#include <stdio.h>
+
 #include "basic-config.h"
 #include "include/secp256k1.h"
 #include "util.h"
