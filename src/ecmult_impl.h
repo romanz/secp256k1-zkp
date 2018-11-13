@@ -38,8 +38,8 @@
 /** Two tables for window size 15: 1.375 MiB. */
 #define WINDOW_G 15
 #else
-/** One table for window size 16: 1.375 MiB. */
-#define WINDOW_G 16
+/** One table for window size 8: ~80KiB. */
+#define WINDOW_G 8
 #endif
 #endif
 
