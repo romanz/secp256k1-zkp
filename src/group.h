@@ -64,8 +64,12 @@ static void secp256k1_ge_neg(secp256k1_ge *r, const secp256k1_ge *a);
 /** Set a group element equal to another which is given in jacobian coordinates */
 static void secp256k1_ge_set_gej(secp256k1_ge *r, secp256k1_gej *a);
 
+#ifndef USE_ECMULT_STATIC_PRECOMPUTATION
+
 /** Set a batch of group elements equal to the inputs given in jacobian coordinates */
 static void secp256k1_ge_set_all_gej_var(secp256k1_ge *r, const secp256k1_gej *a, size_t len);
+
+#endif
 
 /** Bring a batch inputs given in jacobian coordinates (with known z-ratios) to
  *  the same global z "denominator". zr must contain the known z-ratios such
