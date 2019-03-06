@@ -31,16 +31,27 @@
 #  endif
 #else
 /* optimal for 128-bit and 256-bit exponents. */
-#define WINDOW_A 5
-/** larger numbers may result in slightly better performance, at the cost of
-    exponentially larger precomputed tables. */
-#ifdef USE_ENDOMORPHISM
-/** Two tables for window size 15: 1.375 MiB. */
-#define WINDOW_G 15
-#else
-/** One table for window size 16: 1.375 MiB. */
-#define WINDOW_G 16
+#  define WINDOW_A 5
+/** Larger values for ECMULT_WINDOW_SIZE result in possibly better
+ * performance at the cost of an exponentially larger precomputed
+ * table. The exact table size is
+ *     (1 << (WINDOW_G - 2)) * sizeof(secp256k1_ge_storage)  bytes,
+ * where sizeof(secp256k1_ge_storage) is typically 64 bytes but can
+ * be larger due to platform-specific padding and alignment.
+ */
+#  ifdef USE_ENDOMORPHISM
+#    define WINDOW_G ((ECMULT_WINDOW_SIZE)-1)
+#  else
+#    define WINDOW_G (ECMULT_WINDOW_SIZE)
+#  endif
 #endif
+
+/* Noone will ever need more than a window size of 24.
+ * (The code probably works with window sizes up to 33 but
+ * it is not tested for it. For WINDOW_G >= 34, the
+ * expansion of ECMULT_TABLE_SIZE(WINDOW_G) will overflow. */
+#if ECMULT_WINDOW_SIZE < 3 || ECMULT_WINDOW_SIZE > 24
+#  error Set ECMULT_WINDOW_SIZE to an integer in range [3..24].
 #endif
 
 #ifdef USE_ENDOMORPHISM
