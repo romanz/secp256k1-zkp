@@ -188,31 +188,32 @@ SECP256K1_INLINE static int secp256k1_range_proveparams(uint64_t *v, size_t *rin
     return 1;
 }
 
+secp256k1_gej pubs[128];     /* Candidate digits for our proof, most inferred. */
+secp256k1_scalar s[128];     /* Signatures in our proof, most forged. */
+secp256k1_scalar sec[32];    /* Blinding factors for the correct digits. */
+secp256k1_scalar k[32];      /* Nonces for our non-forged signatures. */
+secp256k1_scalar stmp;
+secp256k1_sha256 sha256_m;
+unsigned char prep[4096];
+unsigned char tmp[33];
+unsigned char *signs;          /* Location of sign flags in the proof. */
+uint64_t v;
+uint64_t scale;                /* scale = 10^exp. */
+int mantissa;                  /* Number of bits proven in the blinded value. */
+size_t rings;                     /* How many digits will our proof cover. */
+size_t rsizes[32];                /* How many possible values there are for each place. */
+size_t secidx[32];                /* Which digit is the correct one. */
+size_t len;                       /* Number of bytes used so far. */
+size_t i;
+int overflow;
+size_t npub;
+
 /* strawman interface, writes proof in proof, a buffer of plen, proves with respect to min_value the range for commit which has the provided blinding factor and value. */
 SECP256K1_INLINE static int secp256k1_rangeproof_sign_impl(const secp256k1_ecmult_context* ecmult_ctx,
  const secp256k1_ecmult_gen_context* ecmult_gen_ctx,
  unsigned char *proof, size_t *plen, uint64_t min_value,
  const secp256k1_ge *commit, const unsigned char *blind, const unsigned char *nonce, int exp, int min_bits, uint64_t value,
  const unsigned char *message, size_t msg_len, const unsigned char *extra_commit, size_t extra_commit_len, const secp256k1_ge* genp){
-    secp256k1_gej pubs[128];     /* Candidate digits for our proof, most inferred. */
-    secp256k1_scalar s[128];     /* Signatures in our proof, most forged. */
-    secp256k1_scalar sec[32];    /* Blinding factors for the correct digits. */
-    secp256k1_scalar k[32];      /* Nonces for our non-forged signatures. */
-    secp256k1_scalar stmp;
-    secp256k1_sha256 sha256_m;
-    unsigned char prep[4096];
-    unsigned char tmp[33];
-    unsigned char *signs;          /* Location of sign flags in the proof. */
-    uint64_t v;
-    uint64_t scale;                /* scale = 10^exp. */
-    int mantissa;                  /* Number of bits proven in the blinded value. */
-    size_t rings;                     /* How many digits will our proof cover. */
-    size_t rsizes[32];                /* How many possible values there are for each place. */
-    size_t secidx[32];                /* Which digit is the correct one. */
-    size_t len;                       /* Number of bytes used so far. */
-    size_t i;
-    int overflow;
-    size_t npub;
     len = 0;
     if (*plen < 65 || min_value > value || min_bits > 64 || min_bits < 0 || exp < -1 || exp > 18) {
         return 0;
@@ -361,13 +362,14 @@ SECP256K1_INLINE static void secp256k1_rangeproof_ch32xor(unsigned char *x, cons
     }
 }
 
+secp256k1_scalar s_orig[128];
+secp256k1_scalar sec[32];
+secp256k1_scalar stmp;
+unsigned char prep[4096];
+
 SECP256K1_INLINE static int secp256k1_rangeproof_rewind_inner(secp256k1_scalar *blind, uint64_t *v,
  unsigned char *m, size_t *mlen, secp256k1_scalar *ev, secp256k1_scalar *s,
  size_t *rsizes, size_t rings, const unsigned char *nonce, const secp256k1_ge *commit, const unsigned char *proof, size_t len, const secp256k1_ge *genp) {
-    secp256k1_scalar s_orig[128];
-    secp256k1_scalar sec[32];
-    secp256k1_scalar stmp;
-    unsigned char prep[4096];
     unsigned char tmp[32];
     uint64_t value;
     size_t offset;
@@ -537,18 +539,19 @@ SECP256K1_INLINE static int secp256k1_rangeproof_getheader_impl(size_t *offset, 
     return 1;
 }
 
+secp256k1_gej accj;
+secp256k1_gej pubs[128];
+secp256k1_ge c;
+secp256k1_scalar s[128];
+secp256k1_scalar evalues[128]; /* Challenges, only used during proof rewind. */
+secp256k1_sha256 sha256_m;
+size_t rsizes[32];
+
 /* Verifies range proof (len plen) for commit, the min/max values proven are put in the min/max arguments; returns 0 on failure 1 on success.*/
 SECP256K1_INLINE static int secp256k1_rangeproof_verify_impl(const secp256k1_ecmult_context* ecmult_ctx,
  const secp256k1_ecmult_gen_context* ecmult_gen_ctx,
  unsigned char *blindout, uint64_t *value_out, unsigned char *message_out, size_t *outlen, const unsigned char *nonce,
  uint64_t *min_value, uint64_t *max_value, const secp256k1_ge *commit, const unsigned char *proof, size_t plen, const unsigned char *extra_commit, size_t extra_commit_len, const secp256k1_ge* genp) {
-    secp256k1_gej accj;
-    secp256k1_gej pubs[128];
-    secp256k1_ge c;
-    secp256k1_scalar s[128];
-    secp256k1_scalar evalues[128]; /* Challenges, only used during proof rewind. */
-    secp256k1_sha256 sha256_m;
-    size_t rsizes[32];
     int ret;
     size_t i;
     int exp;

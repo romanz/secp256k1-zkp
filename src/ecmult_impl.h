@@ -604,15 +604,16 @@ static void secp256k1_ecmult_strauss_wnaf(const secp256k1_ecmult_context *ctx, c
     }
 }
 
-static void secp256k1_ecmult(const secp256k1_ecmult_context *ctx, secp256k1_gej *r, const secp256k1_gej *a, const secp256k1_scalar *na, const secp256k1_scalar *ng) {
-    secp256k1_gej prej[ECMULT_TABLE_SIZE(WINDOW_A)];
-    secp256k1_fe zr[ECMULT_TABLE_SIZE(WINDOW_A)];
-    secp256k1_ge pre_a[ECMULT_TABLE_SIZE(WINDOW_A)];
-    struct secp256k1_strauss_point_state ps[1];
+secp256k1_gej prej[ECMULT_TABLE_SIZE(WINDOW_A)];
+secp256k1_fe zr[ECMULT_TABLE_SIZE(WINDOW_A)];
+secp256k1_ge pre_a[ECMULT_TABLE_SIZE(WINDOW_A)];
+struct secp256k1_strauss_point_state ps[1];
 #ifdef USE_ENDOMORPHISM
-    secp256k1_ge pre_a_lam[ECMULT_TABLE_SIZE(WINDOW_A)];
+secp256k1_ge pre_a_lam[ECMULT_TABLE_SIZE(WINDOW_A)];
 #endif
-    struct secp256k1_strauss_state state;
+struct secp256k1_strauss_state state;
+
+static void secp256k1_ecmult(const secp256k1_ecmult_context *ctx, secp256k1_gej *r, const secp256k1_gej *a, const secp256k1_scalar *na, const secp256k1_scalar *ng) {
 
     state.prej = prej;
     state.zr = zr;
