@@ -16,7 +16,7 @@ Note:
 */
 
 	.syntax unified
-	.arch armv7-a
+	.arch armv7
 	@ eabi attributes - see readelf -A
 	.eabi_attribute 8, 1  @ Tag_ARM_ISA_use = yes
 	.eabi_attribute 9, 0  @ Tag_Thumb_ISA_use = no
