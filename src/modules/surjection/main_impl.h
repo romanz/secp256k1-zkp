@@ -219,9 +219,6 @@ int secp256k1_surjectionproof_generate(const secp256k1_context* ctx, secp256k1_s
     size_t n_total_pubkeys;
     size_t n_used_pubkeys;
     size_t ring_input_index = 0;
-    secp256k1_gej ring_pubkeys[SECP256K1_SURJECTIONPROOF_MAX_N_INPUTS];
-    secp256k1_scalar borromean_s[SECP256K1_SURJECTIONPROOF_MAX_N_INPUTS];
-    secp256k1_ge inputs[SECP256K1_SURJECTIONPROOF_MAX_N_INPUTS];
     secp256k1_ge output;
     unsigned char msg32[32];
 
@@ -261,6 +258,14 @@ int secp256k1_surjectionproof_generate(const secp256k1_context* ctx, secp256k1_s
         return 0;
     }
 
+    if (n_total_pubkeys > SECP256K1_SURJECTIONPROOF_MAX_N_INPUTS) {
+        return 0;
+    }
+    /* Allocate only the required memory on the stack */
+    secp256k1_gej ring_pubkeys[n_total_pubkeys];
+    secp256k1_scalar borromean_s[n_total_pubkeys];
+    secp256k1_ge inputs[n_total_pubkeys];
+
     secp256k1_generator_load(&output, ephemeral_output_tag);
     for (i = 0; i < n_total_pubkeys; i++) {
         secp256k1_generator_load(&inputs[i], &ephemeral_input_tags[i]);
@@ -294,9 +299,6 @@ int secp256k1_surjectionproof_verify(const secp256k1_context* ctx, const secp256
     size_t i;
     size_t n_total_pubkeys;
     size_t n_used_pubkeys;
-    secp256k1_gej ring_pubkeys[SECP256K1_SURJECTIONPROOF_MAX_N_INPUTS];
-    secp256k1_scalar borromean_s[SECP256K1_SURJECTIONPROOF_MAX_N_INPUTS];
-    secp256k1_ge inputs[SECP256K1_SURJECTIONPROOF_MAX_N_INPUTS];
     secp256k1_ge output;
     unsigned char msg32[32];
 
@@ -312,6 +314,14 @@ int secp256k1_surjectionproof_verify(const secp256k1_context* ctx, const secp256
     if (n_used_pubkeys == 0 || n_used_pubkeys > n_total_pubkeys || n_total_pubkeys != n_ephemeral_input_tags) {
         return 0;
     }
+
+    if (n_total_pubkeys > SECP256K1_SURJECTIONPROOF_MAX_N_INPUTS) {
+        return 0;
+    }
+    /* Allocate only the required memory on the stack */
+    secp256k1_gej ring_pubkeys[n_total_pubkeys];
+    secp256k1_scalar borromean_s[n_total_pubkeys];
+    secp256k1_ge inputs[n_total_pubkeys];
 
     secp256k1_generator_load(&output, ephemeral_output_tag);
     for (i = 0; i < n_total_pubkeys; i++) {
