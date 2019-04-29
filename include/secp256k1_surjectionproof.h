@@ -9,7 +9,15 @@ extern "C" {
 #endif
 
 /** Maximum number of inputs that may be given in a surjection proof */
+#ifdef SECP256K1_SURJECTIONPROOF_MAX_N_INPUTS
+
+#if SECP256K1_SURJECTIONPROOF_MAX_N_INPUTS > 256
+#error "SECP256K1_SURJECTIONPROOF_MAX_N_INPUTS must be smaller or equal to 256"
+#endif
+
+#else
 #define SECP256K1_SURJECTIONPROOF_MAX_N_INPUTS 256
+#endif
 
 /** Number of bytes a serialized surjection proof requires given the
  *  number of inputs and the number of used inputs.
